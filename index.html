@@ -1,0 +1,195 @@
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/svg.js/3.1.2/svg.min.js"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"
+    />
+    <style>
+      @font-face {
+        font-family: pokemon-hollow;
+        src: url(Pokemon\ Hollow.ttf);
+      }
+      @font-face {
+        font-family: pokemon-solid;
+        src: url(Pokemon\ Solid.ttf);
+      }
+
+      body {
+        background-image: linear-gradient(45deg, rgb(187, 79, 12), #ff0000);
+        background-color: red;
+        padding: 0;
+        margin: 0;
+        font-family: pokemon-solid;
+        font-size: 96pt;
+        color: rgb(255, 220, 0);
+        text-shadow: 6px 6px 0px rgb(47, 103, 173);
+      }
+      input {
+        font-family: pokemon-solid;
+        font-size: 48pt;
+        color: rgb(255, 220, 0);
+        text-shadow: 6px 6px 0px rgb(47, 103, 173);
+        width: 600px;
+        background: none;
+        border: none;
+        text-align: center;
+      }
+      #housing {
+        position: relative;
+        transform: translate(-200px, -200px);
+      }
+      #bg {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 1000px;
+        height: 1000px;
+      }
+      #puzzle {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 1000px;
+        height: 1000px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      #puzzle img {
+        filter: brightness(0%);
+        transition: filter 500ms ease-in;
+      }
+      #puzzle img.reveal {
+        filter: brightness(100%);
+      }
+      #board {
+        position: absolute;
+        bottom: 0;
+        right: 0;
+        padding: 256px;
+      }
+      #guesses {
+        font-size: 48pt;
+        width: 600px;
+        max-width: 600px;
+      }
+      .guess {
+        display: flex;
+        margin-bottom: 12px;
+      }
+      .mark {
+        width: 120px;
+      }
+      #wordmark {
+        margin-top: 12px;
+        width: 600px;
+        text-align: center;
+      }
+      #entry {
+        margin: 0;
+        padding: 0;
+      }
+      #share {
+        position: absolute;
+        top: 0;
+        right: 0;
+        padding: 64px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="housing">
+      <div id="bg"></div>
+      <div id="puzzle"></div>
+    </div>
+    <div id="board">
+      <div id="guesses"></div>
+      <form id="entry">
+        <input type="text" id="guess" placeholder="?" autofocus />
+        <input type="submit" style="display: none" />
+      </form>
+      <div id="wordmark">PoGéMoN</div>
+    </div>
+    <div id="share" style="display: none">
+      <button style="font-size: 24px" id="share-button">
+        Share <i class="fa fa-share-alt"></i>
+      </button>
+    </div>
+    <script src="/bttv.js"></script>
+    <script>
+      (function () {
+        var bg = SVG().addTo("#bg").size(1000, 1000);
+        setInterval(() => {
+          bg.clear();
+          var pts = [];
+          for (var i = 0; i < 360 * 4; i++) {
+            var r = Math.random() * 150 + 300;
+            pts.push([
+              r * Math.cos((i * Math.PI) / (180 * 4)) + 500,
+              r * Math.sin((i * Math.PI) / (180 * 4)) + 500,
+            ]);
+          }
+          bg.polyline(pts).fill("rgb(106, 194, 221)");
+          var pts = [];
+          for (var i = 0; i < 360 * 2; i++) {
+            var r = Math.random() * 150 + 200;
+            pts.push([
+              r * Math.cos((i * Math.PI) / (180 * 2)) + 500,
+              r * Math.sin((i * Math.PI) / (180 * 2)) + 500,
+            ]);
+          }
+          bg.polyline(pts).fill("white");
+        }, 300);
+        var index =
+          ((new Date().getTime() / 86400000) | 0) -
+          ((new Date(2022, 06, 19).getTime() / 86400000) | 0);
+        var puzzle = bttv[(209587 * index + 239) % bttv.length];
+        var img = document.createElement("img");
+        img.src = "https://cdn.betterttv.net/emote/" + puzzle[1] + "/3x";
+        document.getElementById("puzzle").appendChild(img);
+        var incorrectCount = 0;
+        document.getElementById("entry").onsubmit = (e) => {
+          e.preventDefault();
+          var guess = document.getElementById("guess").value.trim();
+          if (guess.length == 0) {
+            return;
+          }
+          var guessEl = document.createElement("div");
+          guessEl.className = "guess";
+          var markEl = document.createElement("div");
+          markEl.className = "mark";
+          var textEl = document.createElement("div");
+          textEl.className = "text";
+          guessEl.appendChild(markEl);
+          guessEl.appendChild(textEl);
+          if (guess.toLowerCase() == puzzle[0].toLowerCase()) {
+            textEl.innerText = puzzle[0];
+            markEl.innerText = "⭕";
+            document.getElementById("entry").remove();
+            img.classList.add("reveal");
+            document.getElementById("share").style.display = "block";
+            document.getElementById("share-button").onclick = () => {
+              document.getElementById("share-button").innerText = "Copied!";
+              navigator.clipboard.writeText(
+                "Who's that PoGéMoN? #" +
+                  (index + 1) +
+                  " " +
+                  "❌".repeat(incorrectCount) +
+                  "⭕"
+              );
+            };
+          } else {
+            textEl.innerText = guess;
+            markEl.innerText = "❌";
+            incorrectCount++;
+            document.getElementById("guess").value = "";
+          }
+          document.getElementById("guesses").appendChild(guessEl);
+          return false;
+        };
+      })();
+    </script>
+  </body>
+</html>
