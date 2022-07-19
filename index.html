@@ -141,7 +141,7 @@
     <div id="board">
       <div id="guesses"></div>
       <form id="entry">
-        <input type="text" id="guess" placeholder="?" autofocus />
+        <input type="text" id="guess" placeholder="?" />
         <input type="submit" style="display: none" />
       </form>
       <div id="wordmark">PoGéMoN</div>
@@ -156,7 +156,8 @@
       (function () {
         document.getElementById("close-modal").onclick = () => {
           document.getElementById("modal").style.display = "none";
-          new Audio('ludwig.mp3').play()
+          new Audio("ludwig.mp3").play();
+          document.getElementById("guess").focus();
         };
         var bg = SVG().addTo("#bg").size(1000, 1000);
         setInterval(() => {
